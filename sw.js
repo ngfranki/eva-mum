@@ -1,0 +1,5 @@
+// No page, API, authentication response or health data is cached.
+const CACHE='eva-mum-static-v5-pages';const ASSETS=['/eva-mum/boris-cottage-with-doll-v2.png','/eva-mum/boris-icon-v3-32.png','/eva-mum/boris-icon-v3-180.png','/eva-mum/boris-icon-v3-192.png','/eva-mum/boris-icon-v3-512.png','/eva-mum/offline.html'];
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting()});
+self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('eva-mum-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',event=>{const u=new URL(event.request.url);if(u.origin!==self.location.origin||event.request.method!=='GET')return;if(ASSETS.includes(u.pathname))event.respondWith(caches.match(event.request).then(r=>r||fetch(event.request)));else if(event.request.mode==='navigate')event.respondWith(fetch(event.request).catch(()=>caches.match('/eva-mum/offline.html')))});
